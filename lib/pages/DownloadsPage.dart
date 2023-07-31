@@ -135,15 +135,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           title: Text(download['title']),
                           trailing: ElevatedButton(
                               onPressed: () {
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  print(globals.getFileName(download['title']));
-                                  return ReaderPage(
-                                      filename: globals
-                                          .getFileName(download['title']));
-                                }));
+                                globals.openReader(download['title'], context);
                               },
-                              child: Text('Open')),
+                              child: const Text('Open')),
                         ),
                         const SizedBox(
                           height: 15,
