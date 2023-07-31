@@ -6,7 +6,6 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../globals.dart' as globals;
 import '../downloadManager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import './ReaderPage.dart';
 
 var dl = DownloadManager();
 
