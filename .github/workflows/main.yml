@@ -24,17 +24,14 @@ jobs:
       - run: flutter pub get
       - run: flutter build apk --debug --split-per-abi
       - run: flutter build windows
+      uses: thedoctor0/zip-release@master
+        with:
+          type: "zip"
+          filename: AppName-${{github.ref_name}}-windows.zip
+          directory: build/windows/runner/Release
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/debug/*,build/windows/runner/Release/*"
+          artifacts: "build/app/outputs/apk/debug/*,build/windows/runner/Release/AppName-${{github.ref_name}}-windows.zip"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.TOKEN }}
-
-
-
-
-
-
-# push to master, main, develop
-# pull request on main master

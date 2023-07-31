@@ -7,7 +7,6 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../globals.dart' as globals;
 import '../downloadManager.dart';
 import 'dart:io';
-import 'ReaderPage.dart';
 
 class BookInfoPage extends StatefulWidget {
   const BookInfoPage({super.key, required this.bookInfo});
@@ -145,15 +144,9 @@ class _BookInfoPageState extends State<BookInfoPage> {
                                       width: 250,
                                       child: FloatingActionButton.extended(
                                         onPressed: () {
-                                          Navigator.push(context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                            print(globals.getFileName(
-                                                widget.bookInfo['title']));
-                                            return ReaderPage(
-                                                filename: globals.getFileName(
-                                                    widget.bookInfo['title']));
-                                          }));
+                                          globals.openReader(
+                                              widget.bookInfo['title'],
+                                              context);
                                         },
                                         icon: Icon(Icons.book),
                                         label: const Text('Read'),
