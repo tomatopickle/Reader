@@ -73,7 +73,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   void updatePreviouslyDownloaded(Map book) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences db = await SharedPreferences.getInstance();
     previouslyDownloaded.remove(book);
     List<String> data = [];
     final file = await File(globals.getFileName(book['title']));
@@ -81,7 +81,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     previouslyDownloaded.forEach((element) {
       data.add(jsonEncode(element));
     });
-    prefs.setStringList('downloadedBooks', data);
+    db.setStringList('downloadedBooks', data);
   }
 
   Widget build(BuildContext context) {
@@ -100,6 +100,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
                     ListTile(
                         leading: Image.network(download['info']['cover']),
                         title: Text(download['info']['title']),
+                        trailing: download['status'] == DownloadStatus.completed
+                            ? FilledButton(
+                                onPressed: () {
+                                  globals.openReader(download['info']['title'],
+                                      context, download['info']);
+                                },
+                                child: const Text('Open'),
+                              )
+                            : null,
                         subtitle: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,

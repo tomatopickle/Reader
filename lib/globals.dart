@@ -9,6 +9,8 @@ import 'dart:io' show Platform;
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_file/open_file.dart';
+import 'package:android_intent_plus/android_intent.dart';
 
 String serverUrl = 'https://reader-backend-qo9b.onrender.com';
 
@@ -32,13 +34,15 @@ String? downloadDirectory() {
 
 void showLoaderDialog(BuildContext context) {
   AlertDialog alert = AlertDialog(
-    content: new Row(
+    content: Row(
       children: [
-        CircularProgressIndicator(),
-        SizedBox(
+        const CircularProgressIndicator(),
+        const SizedBox(
           width: 15,
         ),
-        Container(margin: EdgeInsets.only(left: 7), child: Text("Loading...")),
+        Container(
+            margin: const EdgeInsets.only(left: 7),
+            child: const Text("Loading...")),
       ],
     ),
   );
@@ -57,6 +61,20 @@ String getFileName(title) {
 
 void openReader(title, context, bookInfo) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (prefs.getBool('settings/openWithSystemViewer') ?? false) {
+    if (Platform.isAndroid){
+      String path = getFileName(title);
+
+      final AndroidIntent intent = AndroidIntent(
+          action: 'action_view',
+          data: Uri.encodeFull(path),
+          type: "application/epub+zip");
+      intent.launch();
+
+    }
+    OpenFile.open(getFileName(title));
+    return;
+  }
   List<String> RecentReads = prefs.getStringList('recentReads') ?? [];
   RecentReads.removeWhere((e) => (jsonDecode(e)['title'] == title));
   RecentReads.insert(0, jsonEncode(bookInfo));
