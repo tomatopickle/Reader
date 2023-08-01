@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_download_manager/flutter_download_manager.dart';
@@ -63,15 +64,24 @@ class _DownloadsPageState extends State<DownloadsPage> {
   void loadPreviouslyDownloaded() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     List data = prefs.getStringList('downloadedBooks') ?? [];
-    int i = 0;
     previouslyDownloaded = [];
     data.forEach((el) {
       print(el.runtimeType);
-
       previouslyDownloaded.add(jsonDecode(el));
-      i++;
     });
     setState(() {});
+  }
+
+  void updatePreviouslyDownloaded(Map book) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    previouslyDownloaded.remove(book);
+    List<String> data = [];
+    final file = await File(globals.getFileName(book['title']));
+    await file.delete();
+    previouslyDownloaded.forEach((element) {
+      data.add(jsonEncode(element));
+    });
+    prefs.setStringList('downloadedBooks', data);
   }
 
   Widget build(BuildContext context) {
@@ -129,14 +139,57 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   for (var download in previouslyDownloaded)
                     Column(
                       children: [
-                        ListTile(
-                          leading: Image.network(download['cover']),
-                          title: Text(download['title']),
-                          trailing: ElevatedButton(
-                              onPressed: () {
-                                globals.openReader(download['title'], context,download);
+                        Dismissible(
+                          key: UniqueKey(),
+                          direction: DismissDirection.endToStart,
+                          background: const ColoredBox(
+                            color: Colors.red,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Icon(Icons.delete, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          onDismissed: (direction) {
+                            updatePreviouslyDownloaded(download);
+                          },
+                          confirmDismiss: (DismissDirection direction) async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                      'Are you sure you want to delete this file permanently?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('No'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text('Yes'),
+                                    )
+                                  ],
+                                );
                               },
-                              child: const Text('Open')),
+                            );
+                            print('Deletion confirmed: $confirmed');
+                            return confirmed;
+                          },
+                          child: ListTile(
+                            leading: Image.network(download['cover']),
+                            title: Text(download['title']),
+                            trailing: ElevatedButton(
+                                onPressed: () {
+                                  globals.openReader(
+                                      download['title'], context, download);
+                                },
+                                child: const Text('Open')),
+                          ),
                         ),
                         const SizedBox(
                           height: 15,
