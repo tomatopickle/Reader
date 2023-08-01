@@ -55,8 +55,12 @@ String getFileName(title) {
   return p.join(downloadDirectory() ?? '', sanitizeFilename(title + '.epub'));
 }
 
-
-void openReader(title, context) async{
+void openReader(title, context, bookInfo) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> RecentReads = prefs.getStringList('recentReads') ?? [];
+  RecentReads.removeWhere((e) => (jsonDecode(e)['title'] == title));
+  RecentReads.insert(0, jsonEncode(bookInfo));
+  prefs.setStringList('recentReads', RecentReads);
   VocsyEpub.setConfig(
     themeColor: Theme.of(context).primaryColor,
     identifier: "iosBook",
@@ -71,13 +75,12 @@ void openReader(title, context) async{
       return ReaderPage(filename: getFileName(title));
     }));
   } else {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     String locatorString = prefs.getString('locators/$title') ?? '{}';
 
-    VocsyEpub.open(getFileName(title),lastLocation: EpubLocator.fromJson(jsonDecode((locatorString))));
-    VocsyEpub.locatorStream.listen((locator)  {
+    VocsyEpub.open(getFileName(title),
+        lastLocation: EpubLocator.fromJson(jsonDecode((locatorString))));
+    VocsyEpub.locatorStream.listen((locator) {
       prefs.setString('locators/$title', locator);
     });
-
   }
 }

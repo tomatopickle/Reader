@@ -134,7 +134,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           title: Text(download['title']),
                           trailing: ElevatedButton(
                               onPressed: () {
-                                globals.openReader(download['title'], context);
+                                globals.openReader(download['title'], context,download);
                               },
                               child: const Text('Open')),
                         ),

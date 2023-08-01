@@ -146,7 +146,7 @@ class _BookInfoPageState extends State<BookInfoPage> {
                                         onPressed: () {
                                           globals.openReader(
                                               widget.bookInfo['title'],
-                                              context);
+                                              context,widget.bookInfo);
                                         },
                                         icon: Icon(Icons.book),
                                         label: const Text('Read'),

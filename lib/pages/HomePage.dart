@@ -4,6 +4,7 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../globals.dart' as globals;
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './BookInfoPage.dart';
 
@@ -17,11 +18,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List books = [];
   bool searching = false;
+  List<Map> recentReads = [];
   @override
   void initState() {
+    loadRecentReads();
     print('Init state called');
     loadDiscoverBooks();
     super.initState();
+  }
+
+  void loadRecentReads() {
+    SharedPreferences.getInstance().then((value) {
+      recentReads = [];
+      List<String> data = value.getStringList('recentReads') ?? [];
+      data.forEach((element) {
+        recentReads.add(jsonDecode(element));
+      });
+      setState(() {});
+    });
   }
 
   void loadDiscoverBooks() {
@@ -85,6 +99,73 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+                if (!searching && recentReads.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Text('Recent',
+                            style: Theme.of(context).textTheme.headlineMedium),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (var book in recentReads)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  child: Tooltip(
+                                      message: book['title'],
+                                      verticalOffset: 125,
+                                      waitDuration: const Duration(seconds: 1),
+                                      child: Card(
+                                        elevation: 0,
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            globals.openReader(
+                                                book['title'], context, book);
+                                          },
+                                          child: SizedBox(
+                                            width: 150,
+                                            child: Column(
+                                              children: [
+                                                Image.network(
+                                                    '${globals.serverUrl}/cors?url=${book['cover']}',
+                                                    height: 200,
+                                                    width: 150,
+                                                    fit: BoxFit.fitWidth),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Text(
+                                                    book['title'],
+                                                    maxLines: 1,
+                                                    softWrap: false,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      )),
+                                ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(
                   height: 20,
                 ),
