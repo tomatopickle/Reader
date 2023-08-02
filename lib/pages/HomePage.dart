@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
 
   void searchBooks(q, context) {
     globals.showLoaderDialog(context);
-    http.get(Uri.parse('${globals.serverUrl}/search?q=$q')).then((value) {
+    http.get(Uri.parse('${globals.serverUrl}/search?q=$q libgen')).then((value) {
       print('done');
       setState(() {
         books = jsonDecode(value.body);

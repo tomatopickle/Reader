@@ -9,10 +9,11 @@ import 'dart:io' show Platform;
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:open_file/open_file.dart';
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 String serverUrl = 'https://reader-backend-qo9b.onrender.com';
+// String serverUrl = 'http://localhost:8000';
 
 String? downloadDirectory() {
   switch (Platform.operatingSystem) {
@@ -23,7 +24,7 @@ String? downloadDirectory() {
       return '${Platform.environment['USERPROFILE']!}\\.reader';
     case 'android':
       // Probably want internal storage.
-      return '/storage/emulated/0/Download/.reader';
+      return '/storage/emulated/0/Download/reader';
     case 'fuchsia':
       // I have no idea.
       return null;
@@ -62,7 +63,7 @@ String getFileName(title) {
 void openReader(title, context, bookInfo) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getBool('settings/openWithSystemViewer') ?? false) {
-    if (Platform.isAndroid){
+    if (Platform.isAndroid) {
       String path = getFileName(title);
 
       final AndroidIntent intent = AndroidIntent(
@@ -70,9 +71,9 @@ void openReader(title, context, bookInfo) async {
           data: Uri.encodeFull(path),
           type: "application/epub+zip");
       intent.launch();
-
+      return;
     }
-    OpenFile.open(getFileName(title));
+    launchUrl(Uri.parse('file:///' + getFileName(title)));
     return;
   }
   List<String> RecentReads = prefs.getStringList('recentReads') ?? [];
